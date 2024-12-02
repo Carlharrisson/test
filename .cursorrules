@@ -1,0 +1,123 @@
+You are an expert in React, Vite, Tailwind CSS, three.js, React three fiber and.
+
+Key Principles
+
+- Write concise, technical responses with accurate React examples.
+- Use functional, declarative programming. Avoid classes.
+- Prefer iteration and modularization over duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading).
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+- Use the Receive an Object, Return an Object (RORO) pattern.
+
+JavaScript
+
+- Use "function" keyword for pure functions. Omit semicolons.
+- Use TypeScript for all code. Prefer interfaces over types. Avoid enums, use maps.
+- File structure: Exported component, subcomponents, helpers, static content, types.
+- Avoid unnecessary curly braces in conditional statements.
+- For single-line statements in conditionals, omit curly braces.
+- Use concise, one-line syntax for simple conditional statements (e.g., if (condition) doSomething()).
+
+Error Handling and Validation - Prioritize error handling and edge cases: - Handle errors and edge cases at the beginning of functions. - Use early returns for error conditions to avoid deeply nested if statements. - Place the happy path last in the function for improved readability. - Avoid unnecessary else statements; use if-return pattern instead. - Use guard clauses to handle preconditions and invalid states early. - Implement proper error logging and user-friendly error messages. - Consider using custom error types or error factories for consistent error handling.
+
+React
+
+- Use functional components and interfaces.
+- Use TSX.
+- Use function, not const, for components.
+- Use Tailwind CSS for components and styling.
+- Implement responsive design with Tailwind CSS.
+- Implement responsive design.
+- Place static content and interfaces at file end.
+- Use content variables for static content outside render functions.
+- Wrap client components in Suspense with fallback.
+- Use dynamic loading for non-critical components.
+- Optimize images: WebP format, size data, lazy loading.
+- Model expected errors as return values: Avoid using try/catch for expected errors in Server Actions. Use useActionState to manage these errors and return them to the client.
+- Use error boundaries for unexpected errors: Implement error boundaries using error.tsx and global-error.tsx files to handle unexpected errors and provide a fallback UI.
+- Use useActionState with react-hook-form for form validation.
+- Always throw user-friendly errors that tanStackQuery can catch and show to the user.
+
+Visual Identity System
+Core Elements
+Color Palette
+
+Primary: Monochromatic grayscale
+
+Pure White (#FFFFFF)
+Light Gray (#E5E5E5)
+Mid Gray (#808080)
+Charcoal (#363636)
+Pure Black (#000000)
+
+Accent: Very subtle warm gray
+
+Warm Light (#F5F4F1)
+Warm Shadow (#4A4846)
+
+Typography
+
+Primary Heading: "Space Grotesk" - geometric sans-serif reflecting the angular forms
+Body Text: "Inter" - clean, modern sans-serif for readability
+Spacing: Use 8px grid system for consistency
+
+Visual Elements
+
+Topographical Grid System
+
+Base layer: Clean 8px grid
+Overlay: Distorted topographical lines
+Usage: Background textures, separators, and hover states
+
+Fragment Shapes
+
+Derived from the angular, crystalline forms in the moodboard
+Used as UI elements and interactive components
+Scale: Larger shapes for headers, smaller for navigation
+
+Dynamic Elements
+
+Particle systems using Three.js
+Grayscale gradient transitions
+Subtle hover animations with displacement
+
+Three.js Implementation Guidelines
+
+Landing Section
+
+3D topographical mesh that responds to mouse movement
+Particle system following the grid structure
+Smooth transitions between sections using displacement shaders
+
+Portfolio Gallery
+
+Interactive 3D fragments that reveal work on hover
+Depth-based parallax effect
+Custom shader for grayscale transitions
+
+Interactive Elements
+
+Mouse-following distortion effect
+Geometric shape morphing on scroll
+Dynamic noise texture for background
+
+Usage Rules
+
+Spacing
+
+Maintain breathing room around elements
+Use golden ratio for layout proportions
+Implement asymmetric balance
+
+Animation
+
+Smooth, subtle movements
+Easing functions: easeInOutCubic for smooth transitions
+Maximum duration: 0.8s for micro-interactions
+
+Responsive Behavior
+
+Graceful degradation of 3D elements on mobile
+Maintain grid system across breakpoints
+Simplified animations on lower-powered devices.

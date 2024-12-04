@@ -1,9 +1,11 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, Suspense } from 'react'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { useGalleryContext } from '../../hooks/useGalleryContext'
-import PaintingMesh from '../Painting/PaintingMesh'
+import { lazy } from 'react'
 import { calculateTargetPosition } from '../../utils/shapeTransitions'
+
+const PaintingMesh = lazy(() => import('../Painting/PaintingMesh'))
 
 function Gallery() {
     const { paintings, displayMode } = useGalleryContext()
@@ -12,7 +14,6 @@ function Gallery() {
     useEffect(() => {
         if (!groupRef.current) return
 
-        // Kill any existing animations
         gsap.killTweensOf(groupRef.current.rotation)
 
         if (displayMode === 'prism' || displayMode === 'fragment') {
@@ -27,7 +28,6 @@ function Gallery() {
             }
             rotate()
         } else {
-            // Reset rotation values before transitioning
             groupRef.current.rotation.y = groupRef.current.rotation.y % (Math.PI * 2)
 
             gsap.to(groupRef.current.rotation, {
@@ -42,14 +42,16 @@ function Gallery() {
 
     return (
         <group ref={groupRef}>
-            {paintings.map((painting, index) => (
-                <PaintingMesh
-                    key={painting._id}
-                    painting={painting}
-                    targetPosition={calculateTargetPosition(displayMode, index, paintings.length)}
-                    index={index}
-                />
-            ))}
+            <Suspense fallback={null}>
+                {paintings.map((painting, index) => (
+                    <PaintingMesh
+                        key={painting._id}
+                        painting={painting}
+                        targetPosition={calculateTargetPosition(displayMode, index, paintings.length)}
+                        index={index}
+                    />
+                ))}
+            </Suspense>
         </group>
     )
 }

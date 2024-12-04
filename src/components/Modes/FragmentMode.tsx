@@ -13,7 +13,7 @@ function FragmentMode() {
         <group ref={groupRef}>
             {paintings.map((painting, index) => (
                 <PaintingMesh
-                    key={painting.id}
+                    key={painting._id}
                     painting={painting}
                     targetPosition={calculateTargetPosition('fragment', index, paintings.length)}
                     index={index}

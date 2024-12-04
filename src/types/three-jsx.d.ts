@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { Canvas3DObject } from "@react-three/fiber";
 
 declare global {

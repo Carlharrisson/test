@@ -1,50 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { GalleryProvider } from './context/GalleryContext';
 import Canvas from './components/Canvas/Canvas';
 import ModeSelector from './components/Navigation/ModeSelector';
 import ArtistInfo from './components/UI/ArtistInfo';
 import PaintingModal from './components/UI/PaintingModal';
-import { GalleryProvider } from './context/GalleryContext';
-import { useGalleryContext } from './hooks/useGalleryContext';
-import { paintingsData } from './data/paintings';
+import gsap from 'gsap';
 
-const App: React.FC = () => {
-  return (
-    <GalleryProvider>
-      <GalleryInitializer />
-    </GalleryProvider>
-  );
-};
-
-const GalleryInitializer: React.FC = () => {
-  const { setPaintings, selectedPainting, setSelectedPainting } = useGalleryContext();
-  const [showArtistInfo, setShowArtistInfo] = useState(false);
+function App() {
+  const [showArtistInfo, setShowArtistInfo] = React.useState(false);
+  const aboutButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    setPaintings(paintingsData);
-  }, [setPaintings]);
+    if (!aboutButtonRef.current) return;
+
+    gsap.fromTo(
+      aboutButtonRef.current,
+      {
+        opacity: 0,
+        y: -20,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'easeInOutCubic',
+        delay: 0.4,
+      }
+    );
+  }, []);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden text-black bg-white font-inter">
-      <Canvas />
-      <div className="absolute z-10 top-4 left-4">
-        <ModeSelector />
+    <GalleryProvider>
+      <div className="relative w-screen h-screen overflow-hidden text-black bg-white font-inter">
+        <div className="absolute inset-0">
+          <Canvas />
+        </div>
+        <div className="absolute z-10 top-4 left-4 sm:left-6 md:left-8">
+          <ModeSelector />
+        </div>
+        <button
+          ref={aboutButtonRef}
+          className="absolute z-10 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base text-white bg-black rounded-full top-4 right-4 sm:right-6 md:right-8 font-space opacity-0 hover:scale-105 transition-transform"
+          onClick={() => setShowArtistInfo(true)}
+        >
+          About
+        </button>
+        {showArtistInfo && <ArtistInfo onClose={() => setShowArtistInfo(false)} />}
+        <PaintingModal />
       </div>
-      <button
-        className="absolute z-10 px-4 py-2 text-black bg-white rounded-full top-4 right-4 font-space"
-        onClick={() => setShowArtistInfo(true)}
-      >
-        About the Artist
-      </button>
-      {showArtistInfo && <ArtistInfo onClose={() => setShowArtistInfo(false)} />}
-      {selectedPainting && (
-        <PaintingModal
-          painting={selectedPainting}
-          onClose={() => setSelectedPainting(null)}
-        />
-      )}
-    </div>
+    </GalleryProvider>
   );
-};
+}
 
 export default App;
-

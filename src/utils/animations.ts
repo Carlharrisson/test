@@ -1,101 +1,104 @@
-import gsap from "gsap";
 import * as THREE from "three";
+import { GalleryMode } from "../types";
+import gsap from "gsap";
 
-export const animateToPosition = (
-  object: THREE.Object3D,
-  targetPosition: THREE.Vector3,
-  duration: number = 0.8,
-  delay: number = 0
-) => {
-  return new Promise<void>((resolve) => {
-    gsap.to(object.position, {
-      x: targetPosition.x,
-      y: targetPosition.y,
-      z: targetPosition.z,
-      duration,
-      delay,
-      ease: "cubic.inOut",
-      onComplete: resolve,
-    });
-  });
-};
+export interface AnimationConfig {
+  targetPosition: THREE.Vector3;
+  targetScale: THREE.Vector3;
+  targetRotation: THREE.Euler;
+  index: number;
+  mode: GalleryMode;
+  groupRef: THREE.Group;
+  isInitialMount?: boolean;
+  material?: THREE.Material;
+}
 
-export const animateRotation = (
-  object: THREE.Object3D,
-  targetRotation: THREE.Euler,
-  duration: number = 1,
-  delay: number = 0
-) => {
-  return new Promise<void>((resolve) => {
-    gsap.to(object.rotation, {
-      x: targetRotation.x,
-      y: targetRotation.y,
-      z: targetRotation.z,
-      duration,
-      delay,
+export const animateToPosition = ({
+  targetPosition,
+  targetScale,
+  targetRotation,
+  index,
+  groupRef,
+  isInitialMount = false,
+  material,
+}: AnimationConfig) => {
+  gsap.killTweensOf(groupRef.position);
+  gsap.killTweensOf(groupRef.scale);
+  gsap.killTweensOf(groupRef.rotation);
+
+  if (isInitialMount && material) {
+    const materialWithOpacity = material as THREE.Material & {
+      opacity: number;
+      transparent: boolean;
+    };
+    materialWithOpacity.transparent = true;
+    materialWithOpacity.opacity = 0;
+
+    gsap.to(materialWithOpacity, {
+      opacity: 1,
+      duration: 1,
+      delay: index * 0.1,
       ease: "power2.inOut",
-      onComplete: resolve,
     });
+  }
+
+  gsap.to(groupRef.position, {
+    x: targetPosition.x,
+    y: targetPosition.y,
+    z: targetPosition.z,
+    duration: 1.2,
+    ease: "power3.inOut",
+    delay: index * 0.04,
+  });
+
+  gsap.to(groupRef.scale, {
+    x: targetScale.x,
+    y: targetScale.y,
+    z: targetScale.z,
+    duration: 1.2,
+    ease: "power3.inOut",
+    delay: index * 0.04,
+  });
+
+  gsap.to(groupRef.rotation, {
+    x: targetRotation.x,
+    y: targetRotation.y,
+    z: targetRotation.z,
+    duration: 1.2,
+    ease: "power3.inOut",
+    delay: index * 0.04,
   });
 };
 
-export const animateScale = (
-  object: THREE.Object3D,
-  targetScale: number,
-  duration: number = 0.8,
-  delay: number = 0
+export const animateHover = (
+  meshRef: THREE.Mesh<THREE.PlaneGeometry>,
+  baseHeight: number,
+  aspectRatio: number,
+  isEntering: boolean
 ) => {
-  return new Promise<void>((resolve) => {
-    gsap.to(object.scale, {
-      x: targetScale,
-      y: targetScale,
-      z: targetScale,
-      duration,
-      delay,
-      ease: "cubic.inOut",
-      onComplete: resolve,
-    });
-  });
-};
+  const scale = isEntering ? 1.1 : 1;
+  const newHeight = baseHeight * scale;
+  const newWidth = newHeight * aspectRatio;
+  const currentWidth = meshRef.geometry.parameters.width;
+  const currentHeight = meshRef.geometry.parameters.height;
 
-export const createEntryAnimation = (
-  objects: THREE.Object3D[],
-  duration: number = 1.5
-) => {
-  return new Promise<void>((resolve) => {
-    let completedAnimations = 0;
-    const totalAnimations = objects.length;
-
-    objects.forEach((obj, index) => {
-      // Start from far away and scaled down
-      obj.position.z = 50;
-      obj.scale.set(0.1, 0.1, 0.1);
-
-      // Add staggered delay based on index
-      const staggerDelay = index * 0.1;
-
-      // Animate position and scale simultaneously
-      gsap.to(obj.position, {
-        z: obj.userData.targetZ || 0,
-        duration,
-        delay: staggerDelay,
-        ease: "power2.out",
-        onComplete: () => {
-          completedAnimations++;
-          if (completedAnimations === totalAnimations) {
-            resolve();
-          }
-        },
-      });
-
-      gsap.to(obj.scale, {
-        x: 1,
-        y: 1,
-        z: 1,
-        duration,
-        delay: staggerDelay,
-        ease: "back.out(1.7)",
-      });
-    });
-  });
+  gsap.to(
+    {
+      width: currentWidth,
+      height: currentHeight,
+    },
+    {
+      width: newWidth,
+      height: newHeight,
+      duration: 0.6,
+      ease: "power2.inOut",
+      onUpdate: function () {
+        meshRef.geometry.dispose();
+        meshRef.geometry = new THREE.PlaneGeometry(
+          this.targets()[0].width,
+          this.targets()[0].height
+        );
+      },
+    }
+  );
 };

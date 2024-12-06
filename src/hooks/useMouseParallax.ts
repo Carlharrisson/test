@@ -7,10 +7,13 @@ export const useMouseParallax = (
   damping: number = 0.1
 ) => {
   const { camera } = useThree();
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const targetRotation = useRef(new THREE.Euler(0, 0, 0));
   const currentRotation = useRef(new THREE.Euler(0, 0, 0));
 
   useEffect(() => {
+    if (isMobile) return; // Disable on mobile
+
     const handleMouseMove = (event: MouseEvent) => {
       const x = (event.clientX / window.innerWidth) * 2 - 1;
       const y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -41,5 +44,5 @@ export const useMouseParallax = (
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [camera, intensity, damping]);
+  }, [camera, intensity, damping, isMobile]);
 };

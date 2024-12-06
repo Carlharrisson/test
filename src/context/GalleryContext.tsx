@@ -40,7 +40,7 @@ export function GalleryProvider({
                         year,
                         medium,
                         size,
-                        "imageUrl": image.asset->url
+                        image
                     }
                 `);
                 setInternalPaintings(result);

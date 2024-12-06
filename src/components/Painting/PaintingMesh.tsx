@@ -6,6 +6,7 @@ import { useGalleryContext } from '../../hooks/useGalleryContext'
 import { Painting } from '../../types'
 import { animateToPosition, animateHover } from '../../utils/animations'
 import { TargetTransform } from '../../utils/shapeTransitions'
+import { urlFor } from '../../lib/sanity'
 
 
 interface PaintingMeshProps {
@@ -18,19 +19,39 @@ function PaintingMesh({ painting, targetPosition, index }: PaintingMeshProps) {
     const groupRef = useRef<THREE.Group>(null)
     const meshRef = useRef<THREE.Mesh<THREE.PlaneGeometry>>(null)
     const { setSelectedPainting, displayMode } = useGalleryContext()
-    const texture = useTexture(painting.imageUrl)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+    // Handle both image and imageUrl cases
+    const imageSource = painting.image || painting.imageUrl
+    const imageUrl = imageSource ? (
+        typeof imageSource === 'string'
+            ? imageSource
+            : urlFor(imageSource)
+                .width(isMobile ? 600 : 800)
+                .quality(isMobile ? 50 : 60)
+                .format('webp')
+                .url()
+    ) : ''
+
+    const texture = useTexture(imageUrl, (texture) => {
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        texture.needsUpdate = true
+    })
     const [aspectRatio, setAspectRatio] = useState(1)
     const baseHeight = 3
     const initialMountRef = useRef(true)
 
     const initialPositionRef = useRef(targetPosition)
 
+    const planeSegments = isMobile ? 1 : 2
+
     useEffect(() => {
         if (texture) {
             const image = texture.image
             setAspectRatio(image.width / image.height)
         }
-    }, [texture])
+    }, [texture, imageUrl, painting.title])
 
     useEffect(() => {
         if (!groupRef.current || !meshRef.current) return
@@ -84,7 +105,7 @@ function PaintingMesh({ painting, targetPosition, index }: PaintingMeshProps) {
                     ref={meshRef}
                     {...meshProps}
                 >
-                    <planeGeometry args={[width, baseHeight]} />
+                    <planeGeometry args={[width, baseHeight, planeSegments, planeSegments]} />
                     <meshBasicMaterial
                         map={texture}
                         side={THREE.DoubleSide}

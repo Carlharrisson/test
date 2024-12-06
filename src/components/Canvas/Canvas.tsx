@@ -5,6 +5,7 @@ import Gallery from '../Gallery/Gallery'
 import { GalleryProvider } from '../../context/GalleryContext'
 import { useGalleryContext } from '../../hooks/useGalleryContext'
 import { useMouseParallax } from '../../hooks/useMouseParallax'
+import LoadingScreen from '../UI/LoadingScreen'
 
 function Scene() {
     useMouseParallax(0.05, 0.05)
@@ -30,6 +31,7 @@ function Scene() {
 
 function Canvas() {
     const { displayMode, setDisplayMode, paintings, setPaintings, selectedPainting, setSelectedPainting } = useGalleryContext()
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
     const contextValue = {
         displayMode,
@@ -41,13 +43,26 @@ function Canvas() {
     }
 
     return (
-        <Suspense fallback={null}>
-            <R3FCanvas camera={{ position: [0, 0, 20], fov: 75 }}>
-                <GalleryProvider {...contextValue}>
-                    <Scene />
-                </GalleryProvider>
-            </R3FCanvas>
-        </Suspense>
+        <>
+            <LoadingScreen />
+            <Suspense fallback={null}>
+                <R3FCanvas
+                    camera={{ position: [0, 0, 20], fov: 75 }}
+                    dpr={isMobile ? [1, 1.5] : [1, 2]}
+                    performance={{ min: 0.5 }}
+                    gl={{
+                        powerPreference: "high-performance",
+                        antialias: !isMobile,
+                        stencil: false,
+                        depth: false
+                    }}
+                >
+                    <GalleryProvider {...contextValue}>
+                        <Scene />
+                    </GalleryProvider>
+                </R3FCanvas>
+            </Suspense>
+        </>
     )
 }
 

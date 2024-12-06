@@ -42,6 +42,15 @@ function checkCollision(
   width: number,
   height: number
 ): boolean {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    // Simpler collision detection for mobile
+    const padding = Math.max(width, height) * 0.8;
+    return existingPositions.some(
+      (existing) => position.distanceTo(existing) < padding
+    );
+  }
+
   const padding = Math.max(width, height) * 0.5;
 
   // Scale padding based on z-position (further objects need more padding)

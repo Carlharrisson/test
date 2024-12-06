@@ -1,6 +1,7 @@
 import { useGalleryContext } from '../../hooks/useGalleryContext'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import gsap from 'gsap'
+import { urlFor } from '../../lib/sanity'
 
 function PaintingModal() {
     const { selectedPainting, setSelectedPainting, paintings } = useGalleryContext()
@@ -8,6 +9,7 @@ function PaintingModal() {
     const contentRef = useRef<HTMLDivElement>(null)
     const isAnimatingRef = useRef(false)
     const [isInitialMount, setIsInitialMount] = useState(true)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
     const currentIndex = paintings.findIndex(p => p._id === selectedPainting?._id)
 
@@ -90,18 +92,7 @@ function PaintingModal() {
         animateToNewPainting(paintings[newIndex])
     }
 
-    useEffect(() => {
-        const handleEscKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                handleClose();
-            }
-        };
-
-        window.addEventListener('keydown', handleEscKey);
-        return () => window.removeEventListener('keydown', handleEscKey);
-    }, []);
-
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         if (!modalRef.current || !contentRef.current || isAnimatingRef.current) return
 
         isAnimatingRef.current = true
@@ -125,6 +116,31 @@ function PaintingModal() {
                 duration: 0.6,
                 ease: "easeInOutCubic"
             }, "-=0.2")
+    }, [setSelectedPainting])
+
+    useEffect(() => {
+        const handleEscKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                handleClose()
+            }
+        }
+
+        window.addEventListener('keydown', handleEscKey)
+        return () => window.removeEventListener('keydown', handleEscKey)
+    }, [handleClose])
+
+    const getImageUrl = (painting: typeof selectedPainting) => {
+        if (!painting) return ''
+        const imageSource = painting.image || painting.imageUrl
+        return imageSource ? (
+            typeof imageSource === 'string'
+                ? imageSource
+                : urlFor(imageSource)
+                    .width(isMobile ? 1200 : 2000) // Larger sizes for modal
+                    .quality(isMobile ? 60 : 75)
+                    .format('webp')
+                    .url()
+        ) : ''
     }
 
     if (!selectedPainting) return null
@@ -177,8 +193,8 @@ function PaintingModal() {
             >
                 <div className="col-span-1 md:col-span-4 h-[50vh] md:h-[80vh] flex items-center justify-center">
                     <img
-                        src={selectedPainting.imageUrl}
-                        alt={selectedPainting.title}
+                        src={selectedPainting ? getImageUrl(selectedPainting) : ''}
+                        alt={selectedPainting?.title}
                         className="object-contain w-full h-full rounded"
                     />
                 </div>

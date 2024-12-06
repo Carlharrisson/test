@@ -4,8 +4,8 @@ import { GalleryMode } from "../types";
 const existingPositions: THREE.Vector3[] = [];
 
 // Constants for camera and viewport calculations
-const cameraDistance = 20;
-const cameraFOV = 75;
+const cameraDistance = 30;
+const cameraFOV = 45;
 const aspectRatio = window.innerWidth / window.innerHeight;
 
 // Calculate visible area at camera distance
@@ -17,7 +17,7 @@ const visibleWidth = visibleHeight * aspectRatio;
 const baseHeight = 3;
 let usableWidth = visibleWidth * 0.8; // 80% of visible width
 let usableHeight = visibleHeight * 0.8; // 80% of visible height
-const usableDepth = 10;
+const usableDepth = 20;
 const scatteredPositions = new Map<string, TargetTransform>();
 
 // Add window resize handler
@@ -35,7 +35,6 @@ window.addEventListener("resize", () => {
   scatteredPositions.clear();
 });
 
-// Improved collision detection with perspective consideration
 function checkCollision(
   position: THREE.Vector3,
   existingPositions: THREE.Vector3[],
@@ -44,27 +43,35 @@ function checkCollision(
 ): boolean {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if (isMobile) {
-    // Simpler collision detection for mobile
-    const padding = Math.max(width, height) * 0.8;
+    const padding = Math.max(width, height) * 1.5; // Increased mobile padding
     return existingPositions.some(
       (existing) => position.distanceTo(existing) < padding
     );
   }
 
-  const padding = Math.max(width, height) * 0.5;
+  const padding = Math.max(width, height) * 2; // Significantly increased base padding
 
-  // Scale padding based on z-position (further objects need more padding)
   const getScaledPadding = (z: number) => {
     const distanceScale = (cameraDistance - z) / cameraDistance;
-    return padding * distanceScale;
+    return padding * distanceScale * 2.5; // Increased scaling factor
   };
 
   return existingPositions.some((existing) => {
-    // Calculate scaled padding based on average z-position
     const avgZ = (position.z + existing.z) / 2;
     const scaledPadding = getScaledPadding(avgZ);
 
-    // Project positions to screen space for overlap check
+    // Even stricter z-depth separation
+    const zDiff = Math.abs(position.z - existing.z);
+    if (zDiff < 3) {
+      // Increased minimum z-separation
+      const xyDist = Math.sqrt(
+        Math.pow(position.x - existing.x, 2) +
+          Math.pow(position.y - existing.y, 2)
+      );
+
+      return xyDist < scaledPadding * 4; // Increased xy padding for close z-planes
+    }
+
     const projectedDist = Math.sqrt(
       Math.pow(
         (position.x - existing.x) * (cameraDistance / (cameraDistance - avgZ)),
@@ -77,11 +84,10 @@ function checkCollision(
         )
     );
 
-    return projectedDist < scaledPadding * 4; // Increased minimum separation
+    return projectedDist < scaledPadding * 2.5;
   });
 }
 
-// Rest of the position finding logic remains the same
 function findValidPosition(
   existingPositions: THREE.Vector3[],
   width: number,
@@ -105,18 +111,29 @@ function findValidPosition(
   // Use golden ratio for better distribution
   const goldenRatio = 1.61803398875;
 
+  // More spread out z-layers
+  const zLayers = [
+    -safeDepth * 0.8,
+    -safeDepth * 0.4,
+    0,
+    safeDepth * 0.4,
+    safeDepth * 0.8,
+  ];
+
   for (let i = 0; i < attempts; i++) {
     const angle = i * goldenRatio * Math.PI * 2;
     const radius =
       (Math.sqrt(i / attempts) * Math.min(safeWidth, safeHeight)) / 2;
 
-    // Modify z-position distribution to prefer positions closer to camera
-    const zPosition = -safeDepth / 2 + Math.random() * (safeDepth / 3);
+    // Select z-layer based on current attempt
+    const zLayer = zLayers[Math.floor(i / (attempts / zLayers.length))];
+    const zVariation = (Math.random() - 0.5) * (safeDepth * 0.05); // Reduced random variation
+    const zPosition = zLayer + zVariation;
 
     const newPosition = new THREE.Vector3(
       Math.cos(angle) * radius,
       Math.sin(angle) * radius,
-      zPosition // Use modified z-position
+      zPosition
     );
 
     const clampedPosition = clampPosition(newPosition);
@@ -172,9 +189,9 @@ export function calculateTargetPosition(
 
       const transform = {
         position,
-        scale: new THREE.Vector3(0.8, 0.8, 0.8),
+        scale: new THREE.Vector3(0.6, 0.6, 0.6),
         rotation: new THREE.Euler(
-          (Math.random() - 0.5) * 0.2, // Reduced rotation for better readability
+          (Math.random() - 0.5) * 0.2,
           (Math.random() - 0.5) * 0.2,
           (Math.random() - 0.5) * 0.2
         ),

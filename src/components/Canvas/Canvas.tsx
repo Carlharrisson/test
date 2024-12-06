@@ -47,14 +47,20 @@ function Canvas() {
             <LoadingScreen />
             <Suspense fallback={null}>
                 <R3FCanvas
-                    camera={{ position: [0, 0, 20], fov: 75 }}
+                    camera={{
+                        position: [0, 0, 30],
+                        fov: 45,
+                        near: 0.1,
+                        far: 1000
+                    }}
                     dpr={isMobile ? [1, 1.5] : [1, 2]}
                     performance={{ min: 0.5 }}
                     gl={{
                         powerPreference: "high-performance",
                         antialias: !isMobile,
                         stencil: false,
-                        depth: false
+                        depth: true,
+                        alpha: true
                     }}
                 >
                     <GalleryProvider {...contextValue}>

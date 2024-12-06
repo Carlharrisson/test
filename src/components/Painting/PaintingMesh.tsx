@@ -93,6 +93,14 @@ function PaintingMesh({ painting, targetPosition, index }: PaintingMeshProps) {
         }
         : {}
 
+    useEffect(() => {
+        if (!meshRef.current) return;
+
+        // Set renderOrder based on z-position (further back renders first)
+        const zPos = groupRef.current?.position.z || 0;
+        meshRef.current.renderOrder = -zPos;
+    }, [targetPosition.position.z]);
+
     return (
         <group ref={groupRef}>
             <Billboard
@@ -108,8 +116,11 @@ function PaintingMesh({ painting, targetPosition, index }: PaintingMeshProps) {
                     <planeGeometry args={[width, baseHeight, planeSegments, planeSegments]} />
                     <meshBasicMaterial
                         map={texture}
-                        side={THREE.DoubleSide}
-                        transparent
+                        side={THREE.FrontSide}
+                        transparent={true}
+                        depthTest={true}
+                        depthWrite={true}
+                        alphaTest={0.5}
                     />
                 </mesh>
             </Billboard>

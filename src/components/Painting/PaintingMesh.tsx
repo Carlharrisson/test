@@ -116,7 +116,7 @@ function PaintingMesh({ painting, targetPosition, index }: PaintingMeshProps) {
                     <planeGeometry args={[width, baseHeight, planeSegments, planeSegments]} />
                     <meshBasicMaterial
                         map={texture}
-                        side={THREE.FrontSide}
+                        side={THREE.DoubleSide}
                         transparent={true}
                         depthTest={true}
                         depthWrite={true}
